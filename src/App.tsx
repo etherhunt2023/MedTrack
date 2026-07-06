@@ -8,10 +8,14 @@ import { InventoryView } from './views/Inventory';
 import { AnalyticsView } from './views/Analytics';
 import { SettingsView } from './views/Settings';
 import { ProfileView } from './views/Profile';
+import { OCRScanView } from './views/OCRScan';
+import { AIInsightsView } from './views/AIInsights';
+import { type ParsedInvoice } from './utils/ocrParser';
 
 function App() {
   const { user, isLoading } = useDB();
   const [currentView, setCurrentView] = useState('dashboard');
+  const [prefilledOrder, setPrefilledOrder] = useState<ParsedInvoice | null>(null);
 
   if (isLoading) {
     return (
@@ -54,9 +58,25 @@ function App() {
       case 'dashboard':
         return <DashboardView />;
       case 'orders':
-        return <OrdersView />;
+        return (
+          <OrdersView 
+            prefilledData={prefilledOrder} 
+            clearPrefilledData={() => setPrefilledOrder(null)} 
+          />
+        );
+      case 'ocr-scan':
+        return (
+          <OCRScanView 
+            onImport={(data) => {
+              setPrefilledOrder(data);
+              setCurrentView('orders');
+            }} 
+          />
+        );
       case 'inventory':
         return <InventoryView />;
+      case 'ai-insights':
+        return <AIInsightsView />;
       case 'analytics':
         return <AnalyticsView />;
       case 'settings':
@@ -76,3 +96,4 @@ function App() {
 }
 
 export default App;
+

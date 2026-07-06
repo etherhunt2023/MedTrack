@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDB } from '../context/DBContext';
+import { type ParsedInvoice } from '../utils/ocrParser';
 
 interface OrderItemFormState {
   isNewMedicine: boolean;
@@ -18,7 +19,12 @@ interface OrderItemFormState {
 
 const DOSAGE_FORMS = ['Tablet', 'Capsule', 'Syrup', 'Inhaler', 'Cream', 'Drops', 'Injection', 'Other'];
 
-export const OrdersView: React.FC = () => {
+interface OrdersViewProps {
+  prefilledData?: ParsedInvoice | null;
+  clearPrefilledData?: () => void;
+}
+
+export const OrdersView: React.FC<OrdersViewProps> = ({ prefilledData, clearPrefilledData }) => {
   const { orders, platforms, medicines, addMedicine, createOrder, refreshData } = useDB();
 
   const [isCreating, setIsCreating] = useState(false);
@@ -54,6 +60,66 @@ export const OrdersView: React.FC = () => {
 
   // Expandable active order details id state
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  // Apply prefilled data from OCR import
+  useEffect(() => {
+    if (prefilledData && clearPrefilledData) {
+      setIsCreating(true);
+      
+      // Match platform name
+      const matchedPlatform = platforms.find(
+        p => p.name.toLowerCase() === prefilledData.platformName?.toLowerCase()
+      );
+      if (matchedPlatform) {
+        setPlatformId(matchedPlatform.id);
+      } else if (platforms.length > 0) {
+        setPlatformId(platforms[0].id);
+      }
+
+      if (prefilledData.orderDate) {
+        setOrderDate(prefilledData.orderDate);
+      }
+      if (prefilledData.orderNumber) {
+        setOrderNumber(prefilledData.orderNumber);
+      }
+      if (prefilledData.discount !== undefined) {
+        setDiscount(prefilledData.discount);
+      }
+      if (prefilledData.tax !== undefined) {
+        setTax(prefilledData.tax);
+      }
+      if (prefilledData.deliveryCharges !== undefined) {
+        setDeliveryCharges(prefilledData.deliveryCharges);
+      }
+
+      if (prefilledData.items && prefilledData.items.length > 0) {
+        const mappedItems = prefilledData.items.map(item => {
+          const matchedMed = medicines.find(
+            m => m.name.toLowerCase() === item.medicineName.toLowerCase() ||
+                 m.brand.toLowerCase() === (item.brandName || '').toLowerCase()
+          );
+
+          return {
+            isNewMedicine: !matchedMed,
+            medicine_id: matchedMed ? matchedMed.id : (medicines[0]?.id || ''),
+            newMedName: item.medicineName || '',
+            newMedBrand: item.brandName || item.medicineName || '',
+            newMedDosageForm: item.dosageForm || 'Tablet',
+            newMedStrength: item.strength || '500mg',
+            newMedDescription: '',
+            quantity: item.quantity || 1,
+            unit_price: item.unitPrice || 0,
+            discount: item.discount || 0,
+            expiry_date: item.expiryDate || '',
+            batch_number: item.batchNumber || ''
+          };
+        });
+        setItems(mappedItems);
+      }
+
+      clearPrefilledData();
+    }
+  }, [prefilledData, platforms, medicines, clearPrefilledData]);
 
   // Calculated totals
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price - item.discount), 0);

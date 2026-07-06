@@ -75,10 +75,26 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewCha
     </svg>
   );
 
+  const iconOCR = (
+    <svg className="md-bottom-nav__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle cx="12" cy="13" r="4"></circle>
+    </svg>
+  );
+
+  const iconAI = (
+    <svg className="md-bottom-nav__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a10 10 0 0 1 7.54 16.59c-.44.54-.73 1.22-.73 1.91V21a1 1 0 0 1-1 1H6.19a1 1 0 0 1-1-1v-.5c0-.69-.29-1.37-.73-1.91A10 10 0 0 1 12 2z"></path>
+      <line x1="9" y1="10" x2="15" y2="10"></line>
+    </svg>
+  );
+
   const navItems = [
     { view: 'dashboard', label: 'Dashboard', icon: iconHome },
     { view: 'orders', label: 'Orders', icon: iconOrders },
+    { view: 'ocr-scan', label: 'Scan Invoice', icon: iconOCR },
     { view: 'inventory', label: 'Inventory', icon: iconInventory },
+    { view: 'ai-insights', label: 'AI Insights', icon: iconAI },
     { view: 'analytics', label: 'Analytics', icon: iconAnalytics },
     { view: 'settings', label: 'Settings', icon: iconSettings }
   ];
